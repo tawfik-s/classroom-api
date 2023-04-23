@@ -1,0 +1,25 @@
+
+#jwt values
+jwt_secret: oIhbd+QIyZnylJiHfnjjXcnHGXMicUqu9+no8qHAyXw=
+
+#postgres config
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/quiz_api
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# JPA settings
+#spring.jpa.database-platform=org.hibernate.dialect.Oracle12cDialect
+#spring.jpa.hibernate.use-new-id-generator-mappings=false
+#spring.jpa.properties.hibernate.format_sql=true
+#spring.jpa.properties.hibernate.connection.characterEncoding=utf-8
+#spring.jpa.properties.hibernate.connection.CharSet=utf-8
+#spring.jpa.properties.hibernate.connection.useUnicode=true
