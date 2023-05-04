@@ -1,5 +1,6 @@
 package com.tawfeek.quizApi.service;
 
+import com.tawfeek.quizApi.model.classRoom.AddingUserToClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomResponseDTO;
 import com.tawfeek.quizApi.model.classRoom.UserAddingToClassRoomStatusResponseDTO;
@@ -21,8 +22,8 @@ public interface ClassRoomService {
 
     public void deleteClassRoomMember(Long classRoomId, Long memberId);
 
-    public UserAddingToClassRoomStatusResponseDTO addMemberToClassRoom(Long classRoomId, String userEmail);
+    public UserAddingToClassRoomStatusResponseDTO addMemberToClassRoom(Long classRoomId, AddingUserToClassRoomRequestDTO addingUserToClassRoomRequestDTO);
 
-    public List<UserAddingToClassRoomStatusResponseDTO> addMembersToClassRoom(Long classRoomId,List<String> emails);
+    public List<UserAddingToClassRoomStatusResponseDTO> addMembersToClassRoom(Long classRoomId,List<AddingUserToClassRoomRequestDTO> emails);
 
 }

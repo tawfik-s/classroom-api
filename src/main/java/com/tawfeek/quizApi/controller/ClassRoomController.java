@@ -1,6 +1,7 @@
 package com.tawfeek.quizApi.controller;
 
 
+import com.tawfeek.quizApi.model.classRoom.AddingUserToClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomResponseDTO;
 import com.tawfeek.quizApi.model.classRoom.UserAddingToClassRoomStatusResponseDTO;
@@ -57,13 +58,13 @@ public class ClassRoomController {
     }
 
     @PostMapping("/{classRoomId}/members")
-    public ResponseEntity<UserAddingToClassRoomStatusResponseDTO> addMemberToClassRoom(@PathVariable Long classRoomId, @RequestBody String userEmail) {
-        UserAddingToClassRoomStatusResponseDTO userAddingToClassRoomStatusResponseDTO = classRoomService.addMemberToClassRoom(classRoomId, userEmail);
+    public ResponseEntity<UserAddingToClassRoomStatusResponseDTO> addMemberToClassRoom(@PathVariable Long classRoomId, @RequestBody AddingUserToClassRoomRequestDTO addingUserToClassRoomRequestDTO) {
+        UserAddingToClassRoomStatusResponseDTO userAddingToClassRoomStatusResponseDTO = classRoomService.addMemberToClassRoom(classRoomId, addingUserToClassRoomRequestDTO);
         return new ResponseEntity<>(userAddingToClassRoomStatusResponseDTO, HttpStatus.CREATED);
     }
 
     @PostMapping("/{classRoomId}/members/batch")
-    public ResponseEntity<List<UserAddingToClassRoomStatusResponseDTO>> addMembersToClassRoom(@PathVariable Long classRoomId, @RequestBody List<String> emails) {
+    public ResponseEntity<List<UserAddingToClassRoomStatusResponseDTO>> addMembersToClassRoom(@PathVariable Long classRoomId, @RequestBody List<AddingUserToClassRoomRequestDTO> emails) {
         List<UserAddingToClassRoomStatusResponseDTO> userAddingToClassRoomStatusResponseDTOList = classRoomService.addMembersToClassRoom(classRoomId, emails);
         return new ResponseEntity<>(userAddingToClassRoomStatusResponseDTOList, HttpStatus.CREATED);
     }

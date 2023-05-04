@@ -6,6 +6,7 @@ import com.tawfeek.quizApi.exception.ConflictException;
 import com.tawfeek.quizApi.exception.RecordNotFoundException;
 import com.tawfeek.quizApi.mapper.ClassRoomMapper;
 import com.tawfeek.quizApi.mapper.UserMapper;
+import com.tawfeek.quizApi.model.classRoom.AddingUserToClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomRequestDTO;
 import com.tawfeek.quizApi.model.classRoom.ClassRoomResponseDTO;
 import com.tawfeek.quizApi.model.classRoom.UserAddingToClassRoomStatusResponseDTO;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.tawfeek.quizApi.Utils.SecurityUtils.getCurrentUserEmail;
 
 
 @Service
@@ -44,10 +47,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     @Override
     @Transactional
     public ClassRoomResponseDTO createClassRoom(ClassRoomRequestDTO classRoomRequestDTO) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         User user = userRepository.findByEmail(email).orElseThrow();
         ClassRoom classRoom = classRoomMapper.toEntity(classRoomRequestDTO);
         classRoomRepository.save(classRoom);
@@ -56,12 +56,10 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         return classRoomMapper.toDTO(classRoom);
     }
 
+
     @Override
     public List<ClassRoomResponseDTO> getOwnedClassRooms() {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         return userRepository.findByEmail(email).orElseThrow()
                 .getClassRooms().stream()
                 .map(classRoom -> classRoomMapper.toDTO(classRoom))
@@ -70,10 +68,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
     @Override
     public List<ClassRoomResponseDTO> getClassRoomsUserMemberOf() {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         User user = userRepository.findByEmail(email).orElseThrow();
         return classRoomRepository.findClassRoomUserMemberOf(user)
                 .orElseThrow().stream()
@@ -83,11 +78,9 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     }
 
     @Override
+    @Transactional
     public void deleteClassRoom(Long classRoomId) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         User user = userRepository.findByEmail(email).orElseThrow();
         if (classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
             classRoomRepository.deleteById(classRoomId);
@@ -99,10 +92,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
     @Override
     public List<UserResponseDTO> getClassRoomMembers(Long classRoomId) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         User user = userRepository.findByEmail(email).orElseThrow();
         if (classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId()) ||
                 classRoomRepository.isUserMemberOfClassRoom(classRoomId, user.getId())) {
@@ -116,56 +106,48 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
     @Override
     public void deleteClassRoomMember(Long classRoomId, Long memberId) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+        String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
             throw new RecordNotFoundException("you are not the class room owner");
         }
-        classRoomRepository.deleteMemberFromClassRoom(classRoomId,memberId);
+        classRoomRepository.deleteByIdAndMembers_Id(classRoomId, memberId);
     }
 
     @Override
-    public UserAddingToClassRoomStatusResponseDTO addMemberToClassRoom(Long classRoomId, String memberEmail) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+    public UserAddingToClassRoomStatusResponseDTO addMemberToClassRoom(Long classRoomId, AddingUserToClassRoomRequestDTO addingUserToClassRoomRequestDTO) {
+        String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
             throw new RecordNotFoundException("you are not the class room owner");
         }
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
-        var member = userRepository.findByEmail(memberEmail).orElseThrow();
+        var member = userRepository.findByEmail(addingUserToClassRoomRequestDTO.getMemberEmail()).orElseThrow();
         classRoom.getMembers().add(member);
         classRoomRepository.save(classRoom);
         return new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "done");
     }
 
     @Override
-    public List<UserAddingToClassRoomStatusResponseDTO> addMembersToClassRoom(Long classRoomId, List<String> emails) {
-        var principal = (UserDetails) SecurityContextHolder
-                .getContext().getAuthentication()
-                .getPrincipal();
-        var email = principal.getUsername();
+    public List<UserAddingToClassRoomStatusResponseDTO> addMembersToClassRoom(Long classRoomId, List<AddingUserToClassRoomRequestDTO> emails) {
+        String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
             throw new RecordNotFoundException("you are not the class room owner");
         }
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
         List<UserAddingToClassRoomStatusResponseDTO> res = new ArrayList<>();
-        for (var memberEmail : emails) {
+        List<User> users = userRepository.getUsersByEmails(emails.stream().map(AddingUserToClassRoomRequestDTO::getMemberEmail).toList());
+
+        users.forEach(member -> {
             try {
-                var member = userRepository.findByEmail(memberEmail).orElseThrow();
                 classRoom.getMembers().add(member);
-                res.add(new UserAddingToClassRoomStatusResponseDTO(memberEmail, "done"));
+                res.add(new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "done"));
             } catch (Exception ex) {
-                res.add(new UserAddingToClassRoomStatusResponseDTO(memberEmail, "fail"));
+                res.add(new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "fail"));
 
             }
-        }
+        });
         classRoomRepository.save(classRoom);
 
         return res;

@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class User implements UserDetails {
 
     private String password;
 
-    @OneToMany
+    @OneToMany(cascade =CascadeType.ALL)
     private List<ClassRoom> classRooms;
 
     @Enumerated(EnumType.STRING)
@@ -57,6 +58,12 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    public void addClassRoom(ClassRoom classRoom){
+        if(classRooms==null){
+            classRooms=new ArrayList<>();
+        }
+        classRooms.add(classRoom);
+    }
     @Override
     public String getUsername() {
         return email;

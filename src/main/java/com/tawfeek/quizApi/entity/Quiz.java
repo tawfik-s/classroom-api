@@ -19,9 +19,9 @@ public class Quiz {
 
     private String name;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<QuizScore> quizScores;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Question> questions;
 }

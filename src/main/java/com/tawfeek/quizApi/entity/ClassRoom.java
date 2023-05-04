@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -22,14 +23,21 @@ public class ClassRoom {
 
     private String name;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Quiz> quizzes;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<User> members;
 
 
     public ClassRoom(String name) {
         this.name=name;
+    }
+
+    public void addMember(User user){
+        if(members==null){
+            members=new ArrayList<>();
+        }
+        members.add(user);
     }
 }
