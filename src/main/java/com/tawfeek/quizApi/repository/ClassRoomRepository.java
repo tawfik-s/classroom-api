@@ -30,6 +30,10 @@ public interface ClassRoomRepository extends JpaRepository<ClassRoom, Long> {
 
     long deleteByIdAndMembers_Id(Long classRoomId, Long userId);
 
+    @Modifying
+    @Query("DELETE FROM ClassRoom c WHERE c.id = :classroomId AND :member MEMBER OF c.members")
+    void deleteMemberFromClassRoom(@Param("classroomId") Long classroomId, @Param("member") User member);
+
 
 
 

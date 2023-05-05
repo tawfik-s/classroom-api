@@ -105,16 +105,19 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     }
 
     @Override
+    @Transactional
     public void deleteClassRoomMember(Long classRoomId, Long memberId) {
         String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
             throw new RecordNotFoundException("you are not the class room owner");
         }
-        classRoomRepository.deleteByIdAndMembers_Id(classRoomId, memberId);
+        classRoomRepository.deleteMemberFromClassRoom(classRoomId,
+                userRepository.findById(memberId).orElseThrow());
     }
 
     @Override
+    @Transactional
     public UserAddingToClassRoomStatusResponseDTO addMemberToClassRoom(Long classRoomId, AddingUserToClassRoomRequestDTO addingUserToClassRoomRequestDTO) {
         String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
@@ -129,6 +132,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     }
 
     @Override
+    @Transactional
     public List<UserAddingToClassRoomStatusResponseDTO> addMembersToClassRoom(Long classRoomId, List<AddingUserToClassRoomRequestDTO> emails) {
         String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
