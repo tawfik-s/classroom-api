@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -18,6 +20,9 @@ public class QuizScore {
 
     @ManyToOne
     private User user;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date submtionDate;
 
     private Long Score;
 }

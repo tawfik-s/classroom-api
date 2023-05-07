@@ -5,9 +5,9 @@ jwt_secret: oIhbd+QIyZnylJiHfnjjXcnHGXMicUqu9+no8qHAyXw=
 #postgres config
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/quiz_api
-    username: admin
-    password: admin
+    url: jdbc:mysql://localhost:3306/classroom_api?createDatabaseIfNotExist=true
+    username: root
+    password: root
   jpa:
     hibernate:
       ddl-auto: update

@@ -26,7 +26,7 @@ public class Question {
 
     private String optionD;
 
-    private char correctAnswer;
+    private String correctAnswers;
 
 
 }

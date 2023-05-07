@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -18,6 +19,14 @@ public class Quiz {
     private Long id;
 
     private String name;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date creationDateTime;
+
+    private Long Duration;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date closeDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<QuizScore> quizScores;
