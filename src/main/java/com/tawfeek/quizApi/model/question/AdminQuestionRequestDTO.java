@@ -19,5 +19,5 @@ public class AdminQuestionRequestDTO {
 
     private String optionD;
 
-    private char correctAnswer;
+    private String correctAnswer;
 }
