@@ -14,6 +14,7 @@ import com.tawfeek.quizApi.model.user.UserResponseDTO;
 import com.tawfeek.quizApi.repository.ClassRoomRepository;
 import com.tawfeek.quizApi.repository.UserRepository;
 import com.tawfeek.quizApi.service.ClassRoomService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
@@ -122,10 +123,13 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
-            throw new RecordNotFoundException("you are not the class room owner");
+            throw new IllegalArgumentException("user is not the admin of the classroom");
+        }
+        var member = userRepository.findByEmail(addingUserToClassRoomRequestDTO.getMemberEmail()).orElseThrow();
+        if(classRoomRepository.isUserAdminOfClassRoom(classRoomId,member.getId())){
+            throw new ConflictException("user is admin and can't be member");
         }
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
-        var member = userRepository.findByEmail(addingUserToClassRoomRequestDTO.getMemberEmail()).orElseThrow();
         classRoom.getMembers().add(member);
         classRoomRepository.save(classRoom);
         return new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "done");
@@ -137,14 +141,18 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         String email = getCurrentUserEmail();
         var user = userRepository.findByEmail(email).orElseThrow();
         if (!classRoomRepository.isUserAdminOfClassRoom(classRoomId, user.getId())) {
-            throw new RecordNotFoundException("you are not the class room owner");
+            throw new IllegalArgumentException("you are not the class room owner");
         }
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
         List<UserAddingToClassRoomStatusResponseDTO> res = new ArrayList<>();
-        List<User> users = userRepository.getUsersByEmails(emails.stream().map(AddingUserToClassRoomRequestDTO::getMemberEmail).toList());
-
+        List<User> users = userRepository
+                .getUsersByEmails(emails.stream().map(AddingUserToClassRoomRequestDTO::getMemberEmail).toList());
+        //todo refactor this to not call database in foreach
         users.forEach(member -> {
             try {
+                if(classRoomRepository.isUserAdminOfClassRoom(classRoomId,member.getId())){
+                    throw new ConflictException("user is admin and can't be member");
+                }
                 classRoom.getMembers().add(member);
                 res.add(new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "done"));
             } catch (Exception ex) {
@@ -153,7 +161,6 @@ public class ClassRoomServiceImpl implements ClassRoomService {
             }
         });
         classRoomRepository.save(classRoom);
-
         return res;
     }
 }
