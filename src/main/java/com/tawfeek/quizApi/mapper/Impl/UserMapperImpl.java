@@ -25,7 +25,7 @@ public class UserMapperImpl implements UserMapper {
     public  UserResponseDTO toDTO(User user) {
         UserResponseDTO newUserResponseDTO = new UserResponseDTO();
         newUserResponseDTO.setId(user.getId());
-        newUserResponseDTO.setUserName(user.getUsername());
+        newUserResponseDTO.setUserName(user.getActualName());
         newUserResponseDTO.setEmail(user.getEmail());
         return newUserResponseDTO;
     }
