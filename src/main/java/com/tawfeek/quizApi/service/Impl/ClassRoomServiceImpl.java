@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.tawfeek.quizApi.Utils.SecurityUtils.getCurrentUserEmail;
 
@@ -126,7 +127,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
             throw new IllegalArgumentException("user is not the admin of the classroom");
         }
         var member = userRepository.findByEmail(addingUserToClassRoomRequestDTO.getMemberEmail()).orElseThrow();
-        if(classRoomRepository.isUserAdminOfClassRoom(classRoomId,member.getId())){
+        if (classRoomRepository.isUserAdminOfClassRoom(classRoomId, member.getId())) {
             throw new ConflictException("user is admin and can't be member");
         }
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
@@ -146,18 +147,15 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         var classRoom = classRoomRepository.findById(classRoomId).orElseThrow();
         List<UserAddingToClassRoomStatusResponseDTO> res = new ArrayList<>();
         List<User> users = userRepository
-                .getUsersByEmails(emails.stream().map(AddingUserToClassRoomRequestDTO::getMemberEmail).toList());
-        //todo refactor this to not call database in foreach
+                .getUsersByEmails(emails.stream()
+                        .map(AddingUserToClassRoomRequestDTO::getMemberEmail)
+                        .filter(memberEmail -> !memberEmail.equals(user.getEmail())).toList());
         users.forEach(member -> {
             try {
-                if(classRoomRepository.isUserAdminOfClassRoom(classRoomId,member.getId())){
-                    throw new ConflictException("user is admin and can't be member");
-                }
                 classRoom.getMembers().add(member);
                 res.add(new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "done"));
             } catch (Exception ex) {
                 res.add(new UserAddingToClassRoomStatusResponseDTO(member.getEmail(), "fail"));
-
             }
         });
         classRoomRepository.save(classRoom);
