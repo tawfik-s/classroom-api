@@ -5,9 +5,10 @@ jwt_secret: oIhbd+QIyZnylJiHfnjjXcnHGXMicUqu9+no8qHAyXw=
 #postgres config
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/classroom_api?createDatabaseIfNotExist=true
-    username: root
-    password: root
+    url: jdbc:postgresql://dpg-ci4ln3dph6eva34s0md0-a.oregon-postgres.render.com:5432/class_room
+    username: class_room_user
+    password: gwjeYYLoCFCKI6wcwHgk2MYDuo5SmrX0
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
