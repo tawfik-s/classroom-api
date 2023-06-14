@@ -5,11 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication
-public class AskmeApplication {
+public class ClassRoomApplication {
 
 
 	public static void main(String[] args) {
-		SpringApplication.run(AskmeApplication.class, args);
+		SpringApplication.run(ClassRoomApplication.class, args);
 	}
 
 }
