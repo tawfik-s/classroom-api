@@ -29,7 +29,7 @@ public class Quiz {
     private Date closeDate;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<QuizScore> quizScores;
+    private List<QuizAnswer> quizAnswers;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Question> questions;
