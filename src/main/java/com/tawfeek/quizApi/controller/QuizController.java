@@ -1,7 +1,9 @@
 package com.tawfeek.quizApi.controller;
 
 
+import com.tawfeek.quizApi.model.quiz.QuizRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseDTO;
+import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,10 +14,18 @@ public class QuizController {
 
 
     // Create quiz
+
+    /**
+     * add quiz to classroom by admin
+     *
+     * @param quizRequestDTO
+     * @return QuizResponseDTO
+     */
     @PostMapping
-    public void createQuiz() {
-        // Implementation goes here
+    public QuizResponseDTO createQuiz(@RequestBody QuizRequestDTO quizRequestDTO){
+        return null;
     }
+
 
     // Get classroom quizzes
     @GetMapping
@@ -31,8 +41,8 @@ public class QuizController {
 
     // Take quiz
     @PostMapping("/{quizId}/take")
-    public void takeQuiz(@PathVariable Long quizId) {
-        // Implementation goes here
+    public QuizResponseWithQuestionsDTO takeQuiz(@PathVariable Long quizId) {
+        return null;
     }
 
     /** Submit result and images
@@ -43,6 +53,13 @@ public class QuizController {
     @PostMapping("/{quizId}/submit")
     public void submitResultAndImages(@PathVariable Long quizId) {
         // Implementation goes here
+    }
+
+    //todo submit single question answer
+
+    @PostMapping("/{quizId}/submit/{questionId}")
+    public void submitQuestionAnswer(@PathVariable Long quizId,@PathVariable Long questionId){
+
     }
 
 
