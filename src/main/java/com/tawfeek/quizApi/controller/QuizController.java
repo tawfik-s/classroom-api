@@ -4,16 +4,21 @@ package com.tawfeek.quizApi.controller;
 import com.tawfeek.quizApi.model.quiz.QuizRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
+import com.tawfeek.quizApi.service.QuizService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/classrooms/quizzes")
+@RequestMapping("/classrooms")
 public class QuizController {
 
 
     // Create quiz
+
+    @Autowired
+    private QuizService quizService;
 
     /**
      * add quiz to classroom by admin
@@ -21,26 +26,26 @@ public class QuizController {
      * @param quizRequestDTO
      * @return QuizResponseDTO
      */
-    @PostMapping
-    public QuizResponseDTO createQuiz(@RequestBody QuizRequestDTO quizRequestDTO){
-        return null;
+    @PostMapping("/{classroomId}/quizzes")
+    public QuizResponseDTO createQuiz(@PathVariable Long classroomId,@RequestBody QuizRequestDTO quizRequestDTO){
+        return quizService.createQuiz(classroomId,quizRequestDTO);
     }
 
 
     // Get classroom quizzes
-    @GetMapping
+    @GetMapping("/quizzes")
     public List<QuizResponseDTO> getClassroomQuizzes() {
         return null; // Placeholder, replace with actual implementation
     }
 
     // Delete quiz
-    @DeleteMapping("/{quizId}")
+    @DeleteMapping("/quizzes/{quizId}")
     public void deleteQuiz(@PathVariable Long quizId) {
         // Implementation goes here
     }
 
     // Take quiz
-    @PostMapping("/{quizId}/take")
+    @PostMapping("/quizzes/{quizId}/take")
     public QuizResponseWithQuestionsDTO takeQuiz(@PathVariable Long quizId) {
         return null;
     }
@@ -50,14 +55,14 @@ public class QuizController {
      * can submit many times during exam until he sends end the exam
      * will submit images also screenshot and image of the person solving the exam
      */
-    @PostMapping("/{quizId}/submit")
+    @PostMapping("/quizzes/{quizId}/submit")
     public void submitResultAndImages(@PathVariable Long quizId) {
         // Implementation goes here
     }
 
     //todo submit single question answer
 
-    @PostMapping("/{quizId}/submit/{questionId}")
+    @PostMapping("/quizzes/{quizId}/submit/{questionId}")
     public void submitQuestionAnswer(@PathVariable Long quizId,@PathVariable Long questionId){
 
     }
@@ -67,7 +72,7 @@ public class QuizController {
      * end the exam for student will submit and end
      * user can't submit after he end the exam
      */
-    @PostMapping("/{quizId}/end")
+    @PostMapping("/quizzes/{quizId}/end")
     public void endExam(@PathVariable Long quizId) {
         // Implementation goes here
     }
@@ -77,7 +82,7 @@ public class QuizController {
     /**
      * endpoint that will calculate exam results and return it back to the user
      */
-    @PostMapping("/{quizId}/calculate-results")
+    @PostMapping("/quizzes/{quizId}/calculate-results")
     public void calculateExamResults(@PathVariable Long quizId) {
         // Implementation goes here
     }
