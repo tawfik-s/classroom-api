@@ -12,6 +12,7 @@ import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -74,8 +75,14 @@ public class QuizServiceImpl implements QuizService {
   }
 
   public List<QuizResponseDTO> getClassroomQuizzes(Long classroomId) {
-
     String currentUserEmail = SecurityUtils.getCurrentUserEmail();
-
+    User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
+    if (!classRoomRepository.isUserMemberOfClassRoom(classroomId, currentUser.getId())
+        && !classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException("you are not authorized to access this classroom");
+    }
+    return classRoomRepository.findById(classroomId).orElseThrow().getQuizzes().stream()
+        .map((quiz -> quizMapper.toDTO(quiz)))
+        .toList();
   }
 }
