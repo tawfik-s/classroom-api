@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/classrooms")
-public class UserQuizController {
+public class MemberQuizController {
 
     // Take quiz
     @PostMapping("/quizzes/{quizId}/take")
