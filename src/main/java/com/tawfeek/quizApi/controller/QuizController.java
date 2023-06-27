@@ -1,7 +1,9 @@
 package com.tawfeek.quizApi.controller;
 
+import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseDTO;
+import com.tawfeek.quizApi.model.quiz.AdminQuizWithQuestionsResponseDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,26 +15,30 @@ import java.util.List;
 @RequestMapping("/classrooms")
 public class QuizController {
 
-  // Create quiz
-
   @Autowired private QuizService quizService;
 
-  /**
-   * add quiz to classroom by admin
-   *
-   * @param quizRequestDTO
-   * @return QuizResponseDTO
-   */
   @PostMapping("/{classroomId}/quizzes")
   public QuizResponseDTO createQuiz(
       @PathVariable Long classroomId, @RequestBody QuizRequestDTO quizRequestDTO) {
     return quizService.createQuiz(classroomId, quizRequestDTO);
   }
 
-  // Get classroom quizzes
+  // add question to quiz and return all quiz data
+  @PostMapping("/classroomId}/quizzes/{quizId}/questions")
+  public AdminQuizWithQuestionsResponseDTO addQuestion(
+      @PathVariable Long classroomId,
+      @PathVariable Long quizId,
+      @RequestBody AdminQuestionRequestDTO questionRequest) {
+
+    return quizService.addQuestion(classroomId, quizId, questionRequest);
+  }
+
+  // add quiz with questions
+
   @GetMapping("{classroomId}/quizzes")
   public List<QuizResponseDTO> getClassRoomQuizzes(@PathVariable Long classroomId) {
-    return quizService.getClassroomQuizzes(classroomId); // Placeholder, replace with actual implementation
+    return quizService.getClassroomQuizzes(
+        classroomId); // Placeholder, replace with actual implementation
   }
 
   // Delete quiz

@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizCreationWithQuestionsDTO {
+public class AdminQuizWithQuestionRequestDTO {
 
     private String name;
 

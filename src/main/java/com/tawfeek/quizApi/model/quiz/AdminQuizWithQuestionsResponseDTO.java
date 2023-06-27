@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizResponseWithQuestionsAndAnswersAdminDTO {
+public class AdminQuizWithQuestionsResponseDTO {
     private Long id;
 
     private String name;

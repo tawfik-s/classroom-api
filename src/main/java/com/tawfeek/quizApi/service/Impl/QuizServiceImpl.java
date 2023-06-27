@@ -1,13 +1,12 @@
 package com.tawfeek.quizApi.service.Impl;
 
 import com.tawfeek.quizApi.Utils.SecurityUtils;
-import com.tawfeek.quizApi.entity.ClassRoom;
-import com.tawfeek.quizApi.entity.Quiz;
-import com.tawfeek.quizApi.entity.QuizAnswer;
-import com.tawfeek.quizApi.entity.User;
+import com.tawfeek.quizApi.entity.*;
+import com.tawfeek.quizApi.mapper.AdminQuestionMapper;
+import com.tawfeek.quizApi.mapper.AdminQuizMapper;
 import com.tawfeek.quizApi.mapper.QuizMapper;
-import com.tawfeek.quizApi.model.quiz.QuizRequestDTO;
-import com.tawfeek.quizApi.model.quiz.QuizResponseDTO;
+import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
+import com.tawfeek.quizApi.model.quiz.*;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -39,11 +37,14 @@ public class QuizServiceImpl implements QuizService {
 
   @Autowired private QuizMapper quizMapper;
 
+  @Autowired private AdminQuestionMapper adminQuestionMapper;
+
+  @Autowired private AdminQuizMapper adminQuizMapper;
+
   public QuizResponseDTO createQuiz(Long classroomId, QuizRequestDTO quizRequestDTO) {
     String currentUserEmail = SecurityUtils.getCurrentUserEmail();
     User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
     ClassRoom classRoom = classRoomRepository.findById(classroomId).orElseThrow();
-
     if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN,
@@ -53,25 +54,27 @@ public class QuizServiceImpl implements QuizService {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Duration should be greater than 0");
     }
-
     Long durationInMinutes = quizRequestDTO.getDuration();
     LocalDateTime creationDateTime =
         LocalDateTime.ofInstant(quizRequestDTO.getCreationDateTime().toInstant(), ZoneOffset.UTC);
     LocalDateTime closeDateTime =
         LocalDateTime.ofInstant(quizRequestDTO.getCloseDate().toInstant(), ZoneOffset.UTC);
     LocalDateTime closingDateTime = creationDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
-
     if (closingDateTime.isAfter(closeDateTime)) {
       throw new IllegalArgumentException(
           "The closing date and time exceeds the provided close date.");
     }
-
     Quiz quiz = quizMapper.toEntity(quizRequestDTO);
     quizRepository.save(quiz);
     classRoom.getQuizzes().add(quiz);
     classRoomRepository.save(classRoom);
-
     return quizMapper.toDTO(quiz);
+  }
+
+  public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
+      Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest) {
+
+    return null;
   }
 
   public List<QuizResponseDTO> getClassroomQuizzes(Long classroomId) {
@@ -84,5 +87,21 @@ public class QuizServiceImpl implements QuizService {
     return classRoomRepository.findById(classroomId).orElseThrow().getQuizzes().stream()
         .map((quiz -> quizMapper.toDTO(quiz)))
         .toList();
+  }
+
+  public AdminQuizWithQuestionsResponseDTO addQuestion(
+      long classroomId, long quizId, AdminQuestionRequestDTO questionRequest) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "you are not the admin of the classroom to add question");
+    }
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    Question question = adminQuestionMapper.toEntity(questionRequest);
+    questionRepository.save(question);
+    quiz.getQuestions().add(question);
+    quizRepository.save(quiz);
+    return adminQuizMapper.toDTO(quiz);
   }
 }
