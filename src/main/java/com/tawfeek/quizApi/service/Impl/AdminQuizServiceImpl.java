@@ -8,7 +8,7 @@ import com.tawfeek.quizApi.mapper.QuizMapper;
 import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
 import com.tawfeek.quizApi.repository.*;
-import com.tawfeek.quizApi.service.QuizService;
+import com.tawfeek.quizApi.service.AdminQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AuthorizationServiceException;
@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-public class QuizServiceImpl implements QuizService {
+public class AdminQuizServiceImpl implements AdminQuizService {
 
   @Autowired private UserRepository userRepository;
 
