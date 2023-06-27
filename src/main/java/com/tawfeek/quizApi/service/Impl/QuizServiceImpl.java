@@ -71,10 +71,41 @@ public class QuizServiceImpl implements QuizService {
     return quizMapper.toDTO(quiz);
   }
 
+
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
       Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
 
-    return null;
+    ClassRoom classRoom = classRoomRepository.findById(classroomId).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "You are not authorized to add a quiz. Only admins can perform this action.");
+    }
+    if (quizRequest.getDuration() < 0) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Duration should be greater than 0");
+    }
+    Long durationInMinutes = quizRequest.getDuration();
+    LocalDateTime creationDateTime =
+        LocalDateTime.ofInstant(quizRequest.getCreationDateTime().toInstant(), ZoneOffset.UTC);
+    LocalDateTime closeDateTime =
+        LocalDateTime.ofInstant(quizRequest.getCloseDate().toInstant(), ZoneOffset.UTC);
+    LocalDateTime closingDateTime = creationDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
+    if (closingDateTime.isAfter(closeDateTime)) {
+      throw new IllegalArgumentException(
+          "The closing date and time exceeds the provided close date.");
+    }
+
+    List<Question> questions =
+        quizRequest.getQuestions().stream()
+            .map(question -> adminQuestionMapper.toEntity(question))
+            .toList();
+    questionRepository.saveAll(questions);
+    Quiz quiz = adminQuizMapper.toEntity(quizRequest, questions);
+    quizRepository.save(quiz);
+    return adminQuizMapper.toDTO(quiz);
   }
 
   public List<QuizResponseDTO> getClassroomQuizzes(Long classroomId) {
