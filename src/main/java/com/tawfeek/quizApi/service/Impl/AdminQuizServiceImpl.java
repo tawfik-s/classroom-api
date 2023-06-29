@@ -143,6 +143,18 @@ public class AdminQuizServiceImpl implements AdminQuizService {
   }
 
   @Override
+  public AdminQuizWithQuestionsResponseDTO getQuizWithQuestionsById(Long classroomId, Long quizId) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "you are not the admin of the classroom to add question");
+    }
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    return adminQuizMapper.toDTO(quiz);
+  }
+
+  @Override
   public void deleteQuestion(Long classroomId, Long quizId, Long questionId) {
     User currentUser =
         userRepository

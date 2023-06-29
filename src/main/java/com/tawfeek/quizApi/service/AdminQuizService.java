@@ -18,9 +18,11 @@ public interface AdminQuizService {
       long classroomId, long quizId, AdminQuestionRequestDTO questionRequest);
 
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
-          Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest);
+      Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest);
 
-    void deleteQuiz(Long classroomId, Long quizId);
+  void deleteQuiz(Long classroomId, Long quizId);
 
   void deleteQuestion(Long classroomId, Long quizId, Long questionId);
+
+  public AdminQuizWithQuestionsResponseDTO getQuizWithQuestionsById(Long classroomId, Long quizId);
 }

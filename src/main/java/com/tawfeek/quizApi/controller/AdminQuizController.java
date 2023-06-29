@@ -14,8 +14,7 @@ import java.util.List;
 public class AdminQuizController {
 
   @Autowired private AdminQuizService adminQuizService;
-  @Autowired
-  private ClassRoomRepository classRoomRepository;
+  @Autowired private ClassRoomRepository classRoomRepository;
 
   @PostMapping("/{classroomId}/quizzes")
   public QuizResponseDTO createQuiz(
@@ -34,32 +33,34 @@ public class AdminQuizController {
 
   @PostMapping("/{classroomId}/quizzes/with-questions")
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
-          @PathVariable Long classroomId,
-          @RequestBody AdminQuizWithQuestionRequestDTO adminQuizWithQuestionRequestDTO
-          ) {
-    return adminQuizService.createQuizWithQuestions(classroomId,adminQuizWithQuestionRequestDTO);
+      @PathVariable Long classroomId,
+      @RequestBody AdminQuizWithQuestionRequestDTO adminQuizWithQuestionRequestDTO) {
+    return adminQuizService.createQuizWithQuestions(classroomId, adminQuizWithQuestionRequestDTO);
   }
 
   @GetMapping("{classroomId}/quizzes")
   public List<QuizResponseDTO> getClassRoomQuizzes(@PathVariable Long classroomId) {
-    return adminQuizService.getClassroomQuizzes(
-        classroomId);
+    return adminQuizService.getClassroomQuizzes(classroomId);
   }
 
   // todo update quiz data
 
   // todo update question data
 
-  // todo getquiz with questions using id
+  @GetMapping("{classroomId}/quizzes/{quizId}/with-questions")
+  public AdminQuizWithQuestionsResponseDTO getClassRoomQuizWithQuestions(
+      @PathVariable Long classroomId, @PathVariable Long quizId) {
+    return adminQuizService.getQuizWithQuestionsById(classroomId, quizId);
+  }
 
   @DeleteMapping("{classroomId}/quizzes/{quizId}/questions/{questionId}")
-  public void deleteQuiz(@PathVariable Long classroomId,@PathVariable Long quizId,@PathVariable Long questionId){
-    adminQuizService.deleteQuestion(classroomId,quizId,questionId);
+  public void deleteQuiz(
+      @PathVariable Long classroomId, @PathVariable Long quizId, @PathVariable Long questionId) {
+    adminQuizService.deleteQuestion(classroomId, quizId, questionId);
   }
 
   @DeleteMapping("{classroomId}/quizzes/{quizId}")
-  public void deleteQuiz(@PathVariable Long classroomId,@PathVariable Long quizId) {
-    adminQuizService.deleteQuiz(classroomId,quizId);
+  public void deleteQuiz(@PathVariable Long classroomId, @PathVariable Long quizId) {
+    adminQuizService.deleteQuiz(classroomId, quizId);
   }
-
 }
