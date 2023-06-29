@@ -2,6 +2,7 @@ package com.tawfeek.quizApi.controller;
 
 import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
+import com.tawfeek.quizApi.repository.ClassRoomRepository;
 import com.tawfeek.quizApi.service.AdminQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,8 @@ import java.util.List;
 public class AdminQuizController {
 
   @Autowired private AdminQuizService adminQuizService;
+  @Autowired
+  private ClassRoomRepository classRoomRepository;
 
   @PostMapping("/{classroomId}/quizzes")
   public QuizResponseDTO createQuiz(
@@ -43,9 +46,20 @@ public class AdminQuizController {
         classroomId);
   }
 
-  @DeleteMapping("/quizzes/{quizId}")
-  public void deleteQuiz(@PathVariable Long quizId) {
-    // Implementation goes here
+  // todo update quiz data
+
+  // todo update question data
+
+  // todo getquiz with questions using id
+
+  @DeleteMapping("{classroomId}/quizzes/{quizId}/questions/{questionId}")
+  public void deleteQuiz(@PathVariable Long classroomId,@PathVariable Long quizId,@PathVariable Long questionId){
+    adminQuizService.deleteQuestion(classroomId,quizId,questionId);
+  }
+
+  @DeleteMapping("{classroomId}/quizzes/{quizId}")
+  public void deleteQuiz(@PathVariable Long classroomId,@PathVariable Long quizId) {
+    adminQuizService.deleteQuiz(classroomId,quizId);
   }
 
 }

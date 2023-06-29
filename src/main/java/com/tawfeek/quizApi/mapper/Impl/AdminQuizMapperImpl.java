@@ -27,7 +27,7 @@ public class AdminQuizMapperImpl implements AdminQuizMapper {
     quizResponse.setCreationDateTime(quiz.getCreationDateTime());
     quizResponse.setQuestions(
         quiz.getQuestions().stream().map(question -> adminQuestionMapper.toDTO(question)).toList());
-    return null;
+    return quizResponse;
   }
 
   @Override

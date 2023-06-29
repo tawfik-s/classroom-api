@@ -19,4 +19,8 @@ public interface AdminQuizService {
 
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
           Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest);
+
+    void deleteQuiz(Long classroomId, Long quizId);
+
+  void deleteQuestion(Long classroomId, Long quizId, Long questionId);
 }

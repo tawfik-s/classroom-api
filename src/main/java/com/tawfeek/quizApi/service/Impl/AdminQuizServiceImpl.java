@@ -9,6 +9,7 @@ import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.AdminQuizService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AuthorizationServiceException;
@@ -41,6 +42,7 @@ public class AdminQuizServiceImpl implements AdminQuizService {
 
   @Autowired private AdminQuizMapper adminQuizMapper;
 
+  @Override
   public QuizResponseDTO createQuiz(Long classroomId, QuizRequestDTO quizRequestDTO) {
     String currentUserEmail = SecurityUtils.getCurrentUserEmail();
     User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
@@ -71,7 +73,8 @@ public class AdminQuizServiceImpl implements AdminQuizService {
     return quizMapper.toDTO(quiz);
   }
 
-
+  @Transactional
+  @Override
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
       Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest) {
     User currentUser =
@@ -108,6 +111,65 @@ public class AdminQuizServiceImpl implements AdminQuizService {
     return adminQuizMapper.toDTO(quiz);
   }
 
+  @Override
+  @Transactional
+  public void deleteQuiz(Long classroomId, Long quizId) {
+    User currentUser =
+        userRepository
+            .findByEmail(SecurityUtils.getCurrentUserEmail())
+            .orElseThrow(() -> new AuthorizationServiceException("Current user not found"));
+
+    ClassRoom classRoom =
+        classRoomRepository
+            .findById(classroomId)
+            .orElseThrow(() -> new IllegalArgumentException("Classroom not found"));
+
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "You are not the admin of the classroom to delete quiz");
+    }
+
+    Quiz quiz =
+        quizRepository
+            .findById(quizId)
+            .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+
+    if (!classRoom.getQuizzes().contains(quiz)) {
+      throw new IllegalArgumentException("The quiz does not belong to the specified classroom");
+    }
+
+    classRoom.getQuizzes().remove(quiz); // Remove quiz from classroom
+    quizRepository.delete(quiz); // Delete the quiz from the database
+  }
+
+  @Override
+  public void deleteQuestion(Long classroomId, Long quizId, Long questionId) {
+    User currentUser =
+        userRepository
+            .findByEmail(SecurityUtils.getCurrentUserEmail())
+            .orElseThrow(() -> new AuthorizationServiceException("Current user not found"));
+    ClassRoom classRoom =
+        classRoomRepository
+            .findById(classroomId)
+            .orElseThrow(() -> new IllegalArgumentException("Classroom not found"));
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException("You are not the admin of the classroom");
+    }
+    Quiz quiz =
+        classRoom.getQuizzes().stream()
+            .filter(q -> q.getId().equals(quizId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+    Question question =
+        quiz.getQuestions().stream()
+            .filter(q -> q.getId().equals(questionId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Question not found"));
+    quiz.getQuestions().remove(question); // Remove question from quiz
+    questionRepository.delete(question); // Delete the question from the database
+  }
+
+  @Override
   public List<QuizResponseDTO> getClassroomQuizzes(Long classroomId) {
     String currentUserEmail = SecurityUtils.getCurrentUserEmail();
     User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
@@ -120,6 +182,7 @@ public class AdminQuizServiceImpl implements AdminQuizService {
         .toList();
   }
 
+  @Override
   public AdminQuizWithQuestionsResponseDTO addQuestion(
       long classroomId, long quizId, AdminQuestionRequestDTO questionRequest) {
     User currentUser =
