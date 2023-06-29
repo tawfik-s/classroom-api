@@ -31,13 +31,12 @@ public class AdminQuizMapperImpl implements AdminQuizMapper {
   }
 
   @Override
-  public Quiz toEntity(AdminQuizWithQuestionRequestDTO quizRequest, List<Question> questions) {
+  public Quiz toEntity(AdminQuizWithQuestionRequestDTO quizRequest) {
     Quiz quiz = new Quiz();
     quiz.setName(quizRequest.getName());
     quiz.setDuration(quizRequest.getDuration());
     quiz.setCreationDateTime(quizRequest.getCreationDateTime());
     quiz.setCloseDate(quizRequest.getCloseDate());
-    quiz.setQuestions(questions);
     return quiz;
   }
 }

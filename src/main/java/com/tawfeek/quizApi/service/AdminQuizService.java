@@ -10,19 +10,28 @@ import java.util.List;
 
 public interface AdminQuizService {
 
-  public QuizResponseDTO createQuiz(Long classroomId, QuizRequestDTO quizRequestDTO);
+  QuizResponseDTO createQuiz(Long classroomId, QuizRequestDTO quizRequestDTO);
 
-  public List<QuizResponseDTO> getClassroomQuizzes(Long classroomId);
+  List<QuizResponseDTO> getClassroomQuizzes(Long classroomId);
 
-  public AdminQuizWithQuestionsResponseDTO addQuestion(
+  AdminQuizWithQuestionsResponseDTO addQuestion(
       long classroomId, long quizId, AdminQuestionRequestDTO questionRequest);
 
-  public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
+  AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
       Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest);
 
   void deleteQuiz(Long classroomId, Long quizId);
 
   void deleteQuestion(Long classroomId, Long quizId, Long questionId);
 
-  public AdminQuizWithQuestionsResponseDTO getQuizWithQuestionsById(Long classroomId, Long quizId);
+  AdminQuizWithQuestionsResponseDTO updateQuiz(
+      Long classroomId, Long quizId, QuizRequestDTO quizRequestDTO);
+
+  AdminQuizWithQuestionsResponseDTO getQuizWithQuestionsById(Long classroomId, Long quizId);
+
+  AdminQuizWithQuestionsResponseDTO updateQuestion(
+      Long classroomId,
+      Long quizId,
+      Long questionId,
+      AdminQuestionRequestDTO adminQuestionRequestDTO);
 }

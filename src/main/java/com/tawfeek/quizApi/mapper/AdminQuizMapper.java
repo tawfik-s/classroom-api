@@ -12,5 +12,5 @@ public interface AdminQuizMapper {
   public AdminQuizWithQuestionsResponseDTO toDTO(Quiz quiz);
 
   public Quiz toEntity(
-          AdminQuizWithQuestionRequestDTO quizCreationWithQuestionsDTO, List<Question> questions);
+          AdminQuizWithQuestionRequestDTO quizCreationWithQuestionsDTO);
 }

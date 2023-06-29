@@ -2,7 +2,6 @@ package com.tawfeek.quizApi.controller;
 
 import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
-import com.tawfeek.quizApi.repository.ClassRoomRepository;
 import com.tawfeek.quizApi.service.AdminQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,6 @@ import java.util.List;
 public class AdminQuizController {
 
   @Autowired private AdminQuizService adminQuizService;
-  @Autowired private ClassRoomRepository classRoomRepository;
 
   @PostMapping("/{classroomId}/quizzes")
   public QuizResponseDTO createQuiz(
@@ -42,10 +40,22 @@ public class AdminQuizController {
   public List<QuizResponseDTO> getClassRoomQuizzes(@PathVariable Long classroomId) {
     return adminQuizService.getClassroomQuizzes(classroomId);
   }
+  @PutMapping("/{classroomId}/quizzes/{quizId}")
+  public AdminQuizWithQuestionsResponseDTO updateQuiz(
+          @PathVariable Long classroomId,
+          @PathVariable Long quizId,
+          @RequestBody QuizRequestDTO quizRequestDTO) {
+    return adminQuizService.updateQuiz(classroomId, quizId, quizRequestDTO);
+  }
 
-  // todo update quiz data
-
-  // todo update question data
+  @PutMapping("/{classroomId}/quizzes/{quizId}/questions/{questionId}")
+  public AdminQuizWithQuestionsResponseDTO updateQuestion(
+          @PathVariable Long classroomId,
+          @PathVariable Long quizId,
+          @PathVariable Long questionId,
+          @RequestBody AdminQuestionRequestDTO adminQuestionRequestDTO) {
+    return adminQuizService.updateQuestion(classroomId, quizId,questionId, adminQuestionRequestDTO);
+  }
 
   @GetMapping("{classroomId}/quizzes/{quizId}/with-questions")
   public AdminQuizWithQuestionsResponseDTO getClassRoomQuizWithQuestions(

@@ -73,8 +73,8 @@ public class AdminQuizServiceImpl implements AdminQuizService {
     return quizMapper.toDTO(quiz);
   }
 
-  @Transactional
   @Override
+  @Transactional
   public AdminQuizWithQuestionsResponseDTO createQuizWithQuestions(
       Long classroomId, AdminQuizWithQuestionRequestDTO quizRequest) {
     User currentUser =
@@ -100,14 +100,16 @@ public class AdminQuizServiceImpl implements AdminQuizService {
       throw new IllegalArgumentException(
           "The closing date and time exceeds the provided close date.");
     }
-
     List<Question> questions =
         quizRequest.getQuestions().stream()
             .map(question -> adminQuestionMapper.toEntity(question))
             .toList();
     questionRepository.saveAll(questions);
-    Quiz quiz = adminQuizMapper.toEntity(quizRequest, questions);
+    Quiz quiz = adminQuizMapper.toEntity(quizRequest);
+    //quiz.setQuestions(questions);
     quizRepository.save(quiz);
+    classRoom.getQuizzes().add(quiz);
+    classRoomRepository.save(classRoom);
     return adminQuizMapper.toDTO(quiz);
   }
 
@@ -151,6 +153,81 @@ public class AdminQuizServiceImpl implements AdminQuizService {
           "you are not the admin of the classroom to add question");
     }
     Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    return adminQuizMapper.toDTO(quiz);
+  }
+
+  @Override
+  @Transactional
+  public AdminQuizWithQuestionsResponseDTO updateQuiz(
+      Long classroomId, Long quizId, QuizRequestDTO quizRequestDTO) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "you are not the admin of the classroom to add question");
+    }
+    if (quizRequestDTO.getDuration() < 0) {
+      throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "Duration should be greater than 0");
+    }
+    Long durationInMinutes = quizRequestDTO.getDuration();
+    LocalDateTime creationDateTime =
+            LocalDateTime.ofInstant(quizRequestDTO.getCreationDateTime().toInstant(), ZoneOffset.UTC);
+    LocalDateTime closeDateTime =
+            LocalDateTime.ofInstant(quizRequestDTO.getCloseDate().toInstant(), ZoneOffset.UTC);
+    LocalDateTime closingDateTime = creationDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
+    if (closingDateTime.isAfter(closeDateTime)) {
+      throw new IllegalArgumentException(
+              "The closing date and time exceeds the provided close date.");
+    }
+    ClassRoom classRoom = classRoomRepository.findById(classroomId).orElseThrow();
+    // todo need to be optimized with jpql
+    Quiz quiz =
+        classRoom.getQuizzes().stream()
+            .filter(q -> q.getId().equals(quizId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+    quiz.setName(quizRequestDTO.getName());
+    quiz.setDuration(quizRequestDTO.getDuration());
+    quiz.setCreationDateTime(quizRequestDTO.getCreationDateTime());
+    quiz.setCloseDate(quizRequestDTO.getCloseDate());
+    quizRepository.save(quiz);
+    return adminQuizMapper.toDTO(quiz);
+  }
+
+  @Override
+  @Transactional
+  public AdminQuizWithQuestionsResponseDTO updateQuestion(
+      Long classroomId,
+      Long quizId,
+      Long questionId,
+      AdminQuestionRequestDTO adminQuestionRequestDTO) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "you are not the admin of the classroom to add question");
+    }
+    ClassRoom classRoom = classRoomRepository.findById(classroomId).orElseThrow();
+    // todo need to be optimized with jpql
+    Quiz quiz =
+        classRoom.getQuizzes().stream()
+            .filter(q -> q.getId().equals(quizId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+    Question question =
+        quiz.getQuestions().stream()
+            .filter(q -> q.getId().equals(questionId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Question not found"));
+
+    question.setText(adminQuestionRequestDTO.getText());
+    question.setOptionA(adminQuestionRequestDTO.getOptionA());
+    question.setOptionB(adminQuestionRequestDTO.getOptionB());
+    question.setOptionC(adminQuestionRequestDTO.getOptionC());
+    question.setOptionD(adminQuestionRequestDTO.getOptionD());
+    question.setCorrectAnswers(adminQuestionRequestDTO.getCorrectAnswer());
+    questionRepository.save(question);
     return adminQuizMapper.toDTO(quiz);
   }
 
