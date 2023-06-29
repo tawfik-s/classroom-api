@@ -104,9 +104,9 @@ public class AdminQuizServiceImpl implements AdminQuizService {
         quizRequest.getQuestions().stream()
             .map(question -> adminQuestionMapper.toEntity(question))
             .toList();
-    questionRepository.saveAll(questions);
+    questions=questionRepository.saveAll(questions);
     Quiz quiz = adminQuizMapper.toEntity(quizRequest);
-    //quiz.setQuestions(questions);
+    quiz.setQuestions(questions);
     quizRepository.save(quiz);
     classRoom.getQuizzes().add(quiz);
     classRoomRepository.save(classRoom);

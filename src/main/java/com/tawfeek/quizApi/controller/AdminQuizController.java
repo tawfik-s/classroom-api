@@ -64,7 +64,7 @@ public class AdminQuizController {
   }
 
   @DeleteMapping("{classroomId}/quizzes/{quizId}/questions/{questionId}")
-  public void deleteQuiz(
+  public void deleteQuestion(
       @PathVariable Long classroomId, @PathVariable Long quizId, @PathVariable Long questionId) {
     adminQuizService.deleteQuestion(classroomId, quizId, questionId);
   }
