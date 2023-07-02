@@ -20,4 +20,6 @@ public class QuestionResponseDTO {
     private String optionC;
 
     private String optionD;
+
+    private String lastAnswer;
 }

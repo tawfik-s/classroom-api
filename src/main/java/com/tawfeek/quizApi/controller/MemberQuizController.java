@@ -1,6 +1,8 @@
 package com.tawfeek.quizApi.controller;
 
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
+import com.tawfeek.quizApi.service.MemberQuizService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,10 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/classrooms")
 public class MemberQuizController {
 
-    // Take quiz
-    @PostMapping("/quizzes/{quizId}/take")
-    public QuizResponseWithQuestionsDTO takeQuiz(@PathVariable Long quizId) {
-        return null;
+    @Autowired private MemberQuizService memberQuizService;
+    @PostMapping("/{classroomId}/quizzes/{quizId}/take")
+    public QuizResponseWithQuestionsDTO takeQuiz(@PathVariable Long classroomId,@PathVariable Long quizId) {
+        return memberQuizService.StartTakingTheQuiz(classroomId,quizId);
     }
 
     /**
@@ -25,8 +27,6 @@ public class MemberQuizController {
     public void submitResultAndImages(@PathVariable Long quizId) {
         // Implementation goes here
     }
-
-    // todo submit single question answer
 
     @PostMapping("/quizzes/{quizId}/submit/{questionId}")
     public void submitQuestionAnswer(@PathVariable Long quizId, @PathVariable Long questionId) {}
