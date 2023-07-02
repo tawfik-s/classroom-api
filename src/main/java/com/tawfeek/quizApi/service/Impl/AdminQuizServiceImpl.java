@@ -5,8 +5,10 @@ import com.tawfeek.quizApi.entity.*;
 import com.tawfeek.quizApi.mapper.AdminQuestionMapper;
 import com.tawfeek.quizApi.mapper.AdminQuizMapper;
 import com.tawfeek.quizApi.mapper.QuizMapper;
+import com.tawfeek.quizApi.mapper.UserMapper;
 import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
+import com.tawfeek.quizApi.model.reports.QuizResultReport;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.AdminQuizService;
 import jakarta.transaction.Transactional;
@@ -19,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,6 +44,8 @@ public class AdminQuizServiceImpl implements AdminQuizService {
   @Autowired private AdminQuestionMapper adminQuestionMapper;
 
   @Autowired private AdminQuizMapper adminQuizMapper;
+
+  @Autowired private UserMapper userMapper;
 
   @Override
   public QuizResponseDTO createQuiz(Long classroomId, QuizRequestDTO quizRequestDTO) {
@@ -104,7 +109,7 @@ public class AdminQuizServiceImpl implements AdminQuizService {
         quizRequest.getQuestions().stream()
             .map(question -> adminQuestionMapper.toEntity(question))
             .toList();
-    questions=questionRepository.saveAll(questions);
+    questions = questionRepository.saveAll(questions);
     Quiz quiz = adminQuizMapper.toEntity(quizRequest);
     quiz.setQuestions(questions);
     quizRepository.save(quiz);
@@ -168,17 +173,17 @@ public class AdminQuizServiceImpl implements AdminQuizService {
     }
     if (quizRequestDTO.getDuration() < 0) {
       throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "Duration should be greater than 0");
+          HttpStatus.BAD_REQUEST, "Duration should be greater than 0");
     }
     Long durationInMinutes = quizRequestDTO.getDuration();
     LocalDateTime creationDateTime =
-            LocalDateTime.ofInstant(quizRequestDTO.getCreationDateTime().toInstant(), ZoneOffset.UTC);
+        LocalDateTime.ofInstant(quizRequestDTO.getCreationDateTime().toInstant(), ZoneOffset.UTC);
     LocalDateTime closeDateTime =
-            LocalDateTime.ofInstant(quizRequestDTO.getCloseDate().toInstant(), ZoneOffset.UTC);
+        LocalDateTime.ofInstant(quizRequestDTO.getCloseDate().toInstant(), ZoneOffset.UTC);
     LocalDateTime closingDateTime = creationDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
     if (closingDateTime.isAfter(closeDateTime)) {
       throw new IllegalArgumentException(
-              "The closing date and time exceeds the provided close date.");
+          "The closing date and time exceeds the provided close date.");
     }
     ClassRoom classRoom = classRoomRepository.findById(classroomId).orElseThrow();
     // todo need to be optimized with jpql
@@ -286,5 +291,37 @@ public class AdminQuizServiceImpl implements AdminQuizService {
     quiz.getQuestions().add(question);
     quizRepository.save(quiz);
     return adminQuizMapper.toDTO(quiz);
+  }
+
+  @Override
+  public List<QuizResultReport> calculateQuizResult(Long classroomId, Long quizId) {
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, currentUser.getId())) {
+      throw new AuthorizationServiceException(
+          "you are not the admin of the classroom calculate results");
+    }
+    if (!quizRepository.isQuizInsideClassRoom(classroomId, quizId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "quiz is not in the classroom you owned");
+    }
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    List<QuizResultReport> res = new ArrayList<>();
+    List<QuizAnswer> quizAnswers = quiz.getQuizAnswers();
+
+    for (var quizAnswer : quizAnswers) {
+      int score = 0;
+      for (var questionAnswer : quizAnswer.getQuestionAnswers()) {
+        if (questionAnswer.getAnswer().equals(questionAnswer.getQuestion().getCorrectAnswers())) {
+          score++;
+        }
+      }
+      QuizResultReport quizResultReport = new QuizResultReport();
+      quizResultReport.setUserResponseDTO(userMapper.toDTO(currentUser));
+      quizResultReport.setNumberOfQuestions((long) quiz.getQuestions().size());
+      quizResultReport.setNumberOfRightQuestion((long) score);
+      res.add(quizResultReport);
+    }
+    return res;
   }
 }

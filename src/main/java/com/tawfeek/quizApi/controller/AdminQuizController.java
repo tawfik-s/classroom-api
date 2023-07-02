@@ -2,6 +2,7 @@ package com.tawfeek.quizApi.controller;
 
 import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.*;
+import com.tawfeek.quizApi.model.reports.QuizResultReport;
 import com.tawfeek.quizApi.service.AdminQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -72,5 +73,11 @@ public class AdminQuizController {
   @DeleteMapping("{classroomId}/quizzes/{quizId}")
   public void deleteQuiz(@PathVariable Long classroomId, @PathVariable Long quizId) {
     adminQuizService.deleteQuiz(classroomId, quizId);
+  }
+
+
+  @GetMapping("/{classroomId}/quizzes/{quizId}/calculate-results")
+  public List<QuizResultReport> calculateMyExamResults(@PathVariable Long classroomId,@PathVariable Long quizId) {
+    return adminQuizService.calculateQuizResult(classroomId,quizId);
   }
 }

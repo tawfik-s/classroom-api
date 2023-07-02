@@ -5,6 +5,7 @@ import com.tawfeek.quizApi.model.quiz.AdminQuizWithQuestionRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizRequestDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseDTO;
 import com.tawfeek.quizApi.model.quiz.AdminQuizWithQuestionsResponseDTO;
+import com.tawfeek.quizApi.model.reports.QuizResultReport;
 
 import java.util.List;
 
@@ -34,4 +35,6 @@ public interface AdminQuizService {
       Long quizId,
       Long questionId,
       AdminQuestionRequestDTO adminQuestionRequestDTO);
+
+    List<QuizResultReport> calculateQuizResult(Long classroomId,Long quizId);
 }
