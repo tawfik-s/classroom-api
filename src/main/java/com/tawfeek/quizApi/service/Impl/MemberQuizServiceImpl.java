@@ -1,23 +1,22 @@
 package com.tawfeek.quizApi.service.Impl;
 
 import com.tawfeek.quizApi.Utils.SecurityUtils;
-import com.tawfeek.quizApi.entity.ClassRoom;
-import com.tawfeek.quizApi.entity.Quiz;
-import com.tawfeek.quizApi.entity.QuizAnswer;
-import com.tawfeek.quizApi.entity.User;
+import com.tawfeek.quizApi.entity.*;
 import com.tawfeek.quizApi.mapper.*;
+import com.tawfeek.quizApi.model.questionAnswer.QuestionAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
+import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import static com.tawfeek.quizApi.Utils.TimeUtils.validateAvailableTimeToContinueSolving;
 import static com.tawfeek.quizApi.Utils.TimeUtils.validateQuizTakingOrSubmitTime;
@@ -78,5 +77,29 @@ public class MemberQuizServiceImpl implements MemberQuizService {
       quizAnswerRepository.save(quizAnswer);
       return quizWithQuestionMapper.toDTO(quiz);
     }
+  }
+
+  @Override
+  public ResponseEntity<String> submitSolution(Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+    String userEmail = SecurityUtils.getCurrentUserEmail();
+    User user = userRepository.findByEmail(userEmail).orElseThrow();
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    validateQuizTakingOrSubmitTime(quiz);
+    if (!quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())){
+       throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
+               "you should take the quize first to start submit answers");
+    }
+     QuizAnswer quizAnswer=quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz,user);
+    validateAvailableTimeToContinueSolving(quiz,quizAnswer);
+    questionAnswerRepository.deleteAll(quizAnswer.getQuestionAnswers());
+    List<QuestionAnswer> questionAnswers = new ArrayList<>();
+     for (var answer : quizAnswerRequestDTO.getQuestionsAnswerList()) {
+         Question question=questionRepository.findById(answer.getId()).orElseThrow();
+         questionAnswers.add(new QuestionAnswer(question,answer.getAnswer()));
+     }
+     questionAnswers=questionAnswerRepository.saveAll(questionAnswers);
+     quizAnswer.setQuestionAnswers(questionAnswers);
+     quizAnswerRepository.save(quizAnswer);
+    return new ResponseEntity<>("submit succeed", HttpStatus.OK);
   }
 }

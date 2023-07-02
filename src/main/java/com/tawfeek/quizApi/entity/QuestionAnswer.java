@@ -21,4 +21,8 @@ public class QuestionAnswer {
 
     private String answer;
 
+    public QuestionAnswer(Question question, String answer) {
+        this.question=question;
+        this.answer=answer;
+    }
 }

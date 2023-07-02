@@ -1,12 +1,11 @@
 package com.tawfeek.quizApi.controller;
 
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
+import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/classrooms")
@@ -24,8 +23,8 @@ public class MemberQuizController {
      * the exam will submit images also screenshot and image of the person solving the exam
      */
     @PostMapping("/quizzes/{quizId}/submit")
-    public void submitResultAndImages(@PathVariable Long quizId) {
-        // Implementation goes here
+    public ResponseEntity<String> submitResultAndImages(@PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+        return memberQuizService.submitSolution(quizId,quizAnswerRequestDTO);
     }
 
     @PostMapping("/quizzes/{quizId}/submit/{questionId}")
