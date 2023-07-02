@@ -6,6 +6,7 @@ import com.tawfeek.quizApi.mapper.*;
 import com.tawfeek.quizApi.model.questionAnswer.QuestionAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
+import com.tawfeek.quizApi.model.reports.QuizResultReport;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import jakarta.transaction.Transactional;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -46,6 +49,8 @@ public class MemberQuizServiceImpl implements MemberQuizService {
   @Autowired private QuizWithQuestionMapper quizWithQuestionMapper;
 
   @Autowired private QuestionMapper questionMapper;
+
+  @Autowired private UserMapper userMapper;
 
   @Override
   @Transactional
@@ -150,6 +155,34 @@ public class MemberQuizServiceImpl implements MemberQuizService {
     return new ResponseEntity<>("submit succeed", HttpStatus.OK);
   }
 
+  @Override
+  public QuizResultReport calculateMyQuizResult(Long quizId) {
 
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
 
+    if (!quizAnswerRepository.isQuizTakenBefore(quizId, currentUser.getId())) {
+      throw new ResponseStatusException(
+              HttpStatus.NOT_ACCEPTABLE, "you should take the quiz first and time finish to get the result");
+    }
+    Quiz quiz=quizRepository.findById(quizId).orElseThrow();
+    LocalDateTime closeDateTime =
+            LocalDateTime.ofInstant(quiz.getCloseDate().toInstant(), ZoneOffset.UTC);
+    if(closeDateTime.isAfter(LocalDateTime.now())){
+      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+              "the quiz results not available until quiz closed");
+    }
+    QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, currentUser);
+    int score=0;
+    for(var questionAnswer:quizAnswer.getQuestionAnswers()){
+      if(questionAnswer.getAnswer().equals(questionAnswer.getQuestion().getCorrectAnswers())){
+        score++;
+      }
+    }
+    QuizResultReport quizResultReport = new QuizResultReport();
+    quizResultReport.setUserResponseDTO(userMapper.toDTO(currentUser));
+    quizResultReport.setNumberOfQuestions((long)quiz.getQuestions().size());
+    quizResultReport.setNumberOfRightQuestion((long)score);
+    return quizResultReport;
+  }
 }

@@ -5,6 +5,7 @@ import com.tawfeek.quizApi.entity.QuizAnswer;
 import com.tawfeek.quizApi.model.questionAnswer.QuestionAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
+import com.tawfeek.quizApi.model.reports.QuizResultReport;
 import com.tawfeek.quizApi.repository.QuizAnswerRepository;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,8 @@ public class MemberQuizController {
     return responseEntity;
   }
 
-  @PostMapping("/quizzes/{quizId}/calculate-results")
-  public void calculateExamResults(@PathVariable Long quizId) {
-    // Implementation goes here
+  @GetMapping("/quizzes/{quizId}/calculate-results")
+  public QuizResultReport calculateMyExamResults(@PathVariable Long quizId) {
+    return memberQuizService.calculateMyQuizResult(quizId);
   }
 }

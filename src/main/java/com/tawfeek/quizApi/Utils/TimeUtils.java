@@ -20,7 +20,7 @@ public class TimeUtils {
         LocalDateTime endDateTime = startDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
         if(endDateTime.isAfter(LocalDateTime.now())){
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-                    "the quiz is not Available you duration is finished");
+                    "the quiz is not Available your duration is finished");
         }
     }
 
