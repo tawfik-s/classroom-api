@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QuizAnswerRepository extends JpaRepository<QuizAnswer,Long> {
 
-    @Query("SELECT COUNT(qa) FROM QuizAnswer qa " +
-            "WHERE qa.user.id = :quizId and qa.quiz.id= :quizId")
+    @Query("SELECT COUNT(qa)>0 FROM QuizAnswer qa " +
+            "WHERE qa.user.id = :userId and qa.quiz.id= :quizId")
     boolean isQuizTakenBefore(@Param("quizId") Long quizId,
                               @Param("userId") Long userId);
 

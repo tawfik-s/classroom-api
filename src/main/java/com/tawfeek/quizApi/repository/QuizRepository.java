@@ -14,7 +14,7 @@ public interface QuizRepository extends JpaRepository<Quiz,Long> {
             "SELECT COUNT(q)>0 FROM ClassRoom c join c.quizzes q "
                     + "where q.id = :quizId and c.id = :classroomId")
     boolean isQuizInsideClassRoom(
-            @Param("classRoomId") Long classroomId, @Param("quizId") Long quizId);
+            @Param("classroomId") Long classroomId, @Param("quizId") Long quizId);
 
 
 }

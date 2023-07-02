@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberQuizController {
 
   @Autowired private MemberQuizService memberQuizService;
-  @Autowired
-  private QuizAnswerRepository quizAnswerRepository;
+  @Autowired private QuizAnswerRepository quizAnswerRepository;
 
   @PostMapping("/{classroomId}/quizzes/{quizId}/take")
   public QuizResponseWithQuestionsDTO takeQuiz(
@@ -44,7 +43,7 @@ public class MemberQuizController {
       @PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
     ResponseEntity<String> responseEntity =
         memberQuizService.submitSolution(quizId, quizAnswerRequestDTO);
-    QuizAnswer quizAnswer=quizAnswerRepository.findById(quizId).orElseThrow();
+    QuizAnswer quizAnswer = quizAnswerRepository.findById(quizId).orElseThrow();
     quizAnswer.setFinish(true);
     quizAnswerRepository.save(quizAnswer);
     return responseEntity;

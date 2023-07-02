@@ -93,7 +93,7 @@ public class MemberQuizServiceImpl implements MemberQuizService {
     validateQuizTakingOrSubmitTime(quiz);
     if (!quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())) {
       throw new ResponseStatusException(
-          HttpStatus.NOT_ACCEPTABLE, "you should take the quize first to start submit answers");
+          HttpStatus.NOT_ACCEPTABLE, "you should take the quiz first to start submit answers");
     }
     QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, user);
     if (quizAnswer.getFinish()) {

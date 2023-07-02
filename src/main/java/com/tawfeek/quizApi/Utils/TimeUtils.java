@@ -18,7 +18,7 @@ public class TimeUtils {
                 LocalDateTime.ofInstant(quizAnswer.getStartTime().toInstant(), ZoneOffset.UTC);
 
         LocalDateTime endDateTime = startDateTime.plus(durationInMinutes, ChronoUnit.MINUTES);
-        if(endDateTime.isBefore(LocalDateTime.now())){
+        if(endDateTime.isAfter(LocalDateTime.now())){
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "the quiz is not Available you duration is finished");
         }
