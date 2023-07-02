@@ -8,6 +8,7 @@ import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
 import com.tawfeek.quizApi.repository.*;
 import com.tawfeek.quizApi.service.MemberQuizService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,7 @@ public class MemberQuizServiceImpl implements MemberQuizService {
   @Autowired private QuestionMapper questionMapper;
 
   @Override
+  @Transactional
   public QuizResponseWithQuestionsDTO StartTakingTheQuiz(Long classroomId, Long quizId) {
     String userEmail = SecurityUtils.getCurrentUserEmail();
     User user = userRepository.findByEmail(userEmail).orElseThrow();
@@ -74,32 +76,80 @@ public class MemberQuizServiceImpl implements MemberQuizService {
       quizAnswer.setUser(user);
       quizAnswer.setStartTime(Calendar.getInstance().getTime());
       quizAnswer.setFinish(false);
-      quizAnswerRepository.save(quizAnswer);
+      quizAnswer = quizAnswerRepository.save(quizAnswer);
+      quiz.getQuizAnswers().add(quizAnswer);
+      quiz = quizRepository.save(quiz);
       return quizWithQuestionMapper.toDTO(quiz);
     }
   }
 
   @Override
-  public ResponseEntity<String> submitSolution(Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+  @Transactional
+  public ResponseEntity<String> submitSolution(
+      Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO) {
     String userEmail = SecurityUtils.getCurrentUserEmail();
     User user = userRepository.findByEmail(userEmail).orElseThrow();
     Quiz quiz = quizRepository.findById(quizId).orElseThrow();
     validateQuizTakingOrSubmitTime(quiz);
-    if (!quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())){
-       throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE,
-               "you should take the quize first to start submit answers");
+    if (!quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_ACCEPTABLE, "you should take the quize first to start submit answers");
     }
-     QuizAnswer quizAnswer=quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz,user);
-    validateAvailableTimeToContinueSolving(quiz,quizAnswer);
+    QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, user);
+    if (quizAnswer.getFinish()) {
+      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "you finished your quiz");
+    }
+    validateAvailableTimeToContinueSolving(quiz, quizAnswer);
     questionAnswerRepository.deleteAll(quizAnswer.getQuestionAnswers());
     List<QuestionAnswer> questionAnswers = new ArrayList<>();
-     for (var answer : quizAnswerRequestDTO.getQuestionsAnswerList()) {
-         Question question=questionRepository.findById(answer.getId()).orElseThrow();
-         questionAnswers.add(new QuestionAnswer(question,answer.getAnswer()));
-     }
-     questionAnswers=questionAnswerRepository.saveAll(questionAnswers);
-     quizAnswer.setQuestionAnswers(questionAnswers);
-     quizAnswerRepository.save(quizAnswer);
+    for (var answer : quizAnswerRequestDTO.getQuestionsAnswerList()) {
+      Question question = questionRepository.findById(answer.getId()).orElseThrow();
+      questionAnswers.add(new QuestionAnswer(question, answer.getAnswer()));
+    }
+    questionAnswers = questionAnswerRepository.saveAll(questionAnswers);
+    quizAnswer.setQuestionAnswers(questionAnswers);
+    quizAnswerRepository.save(quizAnswer);
     return new ResponseEntity<>("submit succeed", HttpStatus.OK);
   }
+
+  @Override
+  @Transactional
+  public ResponseEntity<String> submitSingleQuestion(
+      Long quizId, Long questionId, QuestionAnswerSubmitDTO questionAnswerSubmitDTO) {
+    String userEmail = SecurityUtils.getCurrentUserEmail();
+    User user = userRepository.findByEmail(userEmail).orElseThrow();
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    validateQuizTakingOrSubmitTime(quiz);
+    if (!quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_ACCEPTABLE, "you should take the quize first to start submit answers");
+    }
+    QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, user);
+    if (quizAnswer.getFinish()) {
+      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "you finished your quiz");
+    }
+    validateAvailableTimeToContinueSolving(quiz, quizAnswer);
+
+    var questionAnswer =
+        quizAnswer.getQuestionAnswers().stream()
+            .filter(x -> x.getQuestion().getId().equals(questionId))
+            .findFirst();
+    if (questionAnswer.isPresent()) {
+      QuestionAnswer questionAnswer1 = questionAnswer.get();
+      questionAnswer1.setAnswer(questionAnswerSubmitDTO.getAnswer());
+      questionAnswerRepository.save(questionAnswer1);
+      return new ResponseEntity<>("submit succeed", HttpStatus.OK);
+    }
+    QuestionAnswer questionAnswer1 = new QuestionAnswer();
+    questionAnswer1.setQuestion(questionRepository.findById(questionId).orElseThrow());
+    questionAnswer1.setAnswer(questionAnswerSubmitDTO.getAnswer());
+    questionAnswer1 = questionAnswerRepository.save(questionAnswer1);
+    quizAnswer.getQuestionAnswers().add(questionAnswer1);
+    quizAnswerRepository.save(quizAnswer);
+
+    return new ResponseEntity<>("submit succeed", HttpStatus.OK);
+  }
+
+
+
 }

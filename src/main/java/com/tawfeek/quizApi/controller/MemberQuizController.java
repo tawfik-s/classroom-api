@@ -1,7 +1,11 @@
 package com.tawfeek.quizApi.controller;
 
+import com.tawfeek.quizApi.entity.Quiz;
+import com.tawfeek.quizApi.entity.QuizAnswer;
+import com.tawfeek.quizApi.model.questionAnswer.QuestionAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
+import com.tawfeek.quizApi.repository.QuizAnswerRepository;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,38 +15,43 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/classrooms")
 public class MemberQuizController {
 
-    @Autowired private MemberQuizService memberQuizService;
-    @PostMapping("/{classroomId}/quizzes/{quizId}/take")
-    public QuizResponseWithQuestionsDTO takeQuiz(@PathVariable Long classroomId,@PathVariable Long quizId) {
-        return memberQuizService.StartTakingTheQuiz(classroomId,quizId);
-    }
+  @Autowired private MemberQuizService memberQuizService;
+  @Autowired
+  private QuizAnswerRepository quizAnswerRepository;
 
-    /**
-     * Submit result and images if you exceed the exam time the response status will be 422 with
-     * message "the submission time is exceeded" can submit many times during exam until he sends end
-     * the exam will submit images also screenshot and image of the person solving the exam
-     */
-    @PostMapping("/quizzes/{quizId}/submit")
-    public ResponseEntity<String> submitResultAndImages(@PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
-        return memberQuizService.submitSolution(quizId,quizAnswerRequestDTO);
-    }
+  @PostMapping("/{classroomId}/quizzes/{quizId}/take")
+  public QuizResponseWithQuestionsDTO takeQuiz(
+      @PathVariable Long classroomId, @PathVariable Long quizId) {
+    return memberQuizService.StartTakingTheQuiz(classroomId, quizId);
+  }
 
-    @PostMapping("/quizzes/{quizId}/submit/{questionId}")
-    public void submitQuestionAnswer(@PathVariable Long quizId, @PathVariable Long questionId) {}
+  @PostMapping("/quizzes/{quizId}/submit")
+  public ResponseEntity<String> submitQuizAnswers(
+      @PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+    return memberQuizService.submitSolution(quizId, quizAnswerRequestDTO);
+  }
 
-    /**
-     * End the exam end the exam for student will submit and end user can't submit after he end the
-     * exam
-     */
-    @PostMapping("/quizzes/{quizId}/end")
-    public void endExam(@PathVariable Long quizId) {
-        // Implementation goes here
-    }
-    // Calculate exam results or recalculate them
+  @PostMapping("/quizzes/{quizId}/submit/{questionId}")
+  public ResponseEntity<String> submitQuestionAnswer(
+      @PathVariable Long quizId,
+      @PathVariable Long questionId,
+      @RequestBody QuestionAnswerSubmitDTO questionAnswerSubmitDTO) {
+    return memberQuizService.submitSingleQuestion(quizId, questionId, questionAnswerSubmitDTO);
+  }
 
-    /** endpoint that will calculate exam results and return it back to the user */
-    @PostMapping("/quizzes/{quizId}/calculate-results")
-    public void calculateExamResults(@PathVariable Long quizId) {
-        // Implementation goes here
-    }
+  @PostMapping("/quizzes/{quizId}/end")
+  public ResponseEntity<String> endExam(
+      @PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+    ResponseEntity<String> responseEntity =
+        memberQuizService.submitSolution(quizId, quizAnswerRequestDTO);
+    QuizAnswer quizAnswer=quizAnswerRepository.findById(quizId).orElseThrow();
+    quizAnswer.setFinish(true);
+    quizAnswerRepository.save(quizAnswer);
+    return responseEntity;
+  }
+
+  @PostMapping("/quizzes/{quizId}/calculate-results")
+  public void calculateExamResults(@PathVariable Long quizId) {
+    // Implementation goes here
+  }
 }
