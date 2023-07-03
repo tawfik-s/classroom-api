@@ -2,10 +2,15 @@ package com.tawfeek.quizApi.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "question_answers")
 public class QuestionAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -16,4 +21,8 @@ public class QuestionAnswer {
 
     private String answer;
 
+    public QuestionAnswer(Question question, String answer) {
+        this.question=question;
+        this.answer=answer;
+    }
 }

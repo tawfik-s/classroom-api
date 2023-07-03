@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,4 +34,13 @@ public class Quiz {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Question> questions;
+
+    public List<Question> getQuestions() {
+        if (questions == null) {
+            questions = new ArrayList<>();
+        }
+        return questions;
+    }
+
+
 }

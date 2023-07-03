@@ -23,7 +23,12 @@ public class QuizAnswer {
     private User user;
 
     @Temporal(TemporalType.TIMESTAMP)
+    private Date startTime;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date submtionDate;
+
+    private Boolean finish;
 
     @ManyToOne
     private Quiz quiz;

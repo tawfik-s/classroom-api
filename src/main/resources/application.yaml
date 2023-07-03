@@ -8,6 +8,9 @@ spring:
     url: jdbc:postgresql://dpg-ci4ln3dph6eva34s0md0-a.oregon-postgres.render.com:5432/class_room
     username: class_room_user
     password: gwjeYYLoCFCKI6wcwHgk2MYDuo5SmrX0
+#    url: jdbc:postgresql://localhost:5432/classroom_api?createDatabaseIfNotExist=true
+#    username: postgres
+#    password: admin
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

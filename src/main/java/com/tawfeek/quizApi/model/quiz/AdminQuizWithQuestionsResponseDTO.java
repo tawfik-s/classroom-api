@@ -1,7 +1,8 @@
 package com.tawfeek.quizApi.model.quiz;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.tawfeek.quizApi.model.question.AdminQuestionRequestDTO;
+import com.tawfeek.quizApi.model.question.AdminQuestionResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuizCreationWithQuestionsDTO {
+public class AdminQuizWithQuestionsResponseDTO {
+    private Long id;
 
     private String name;
 
@@ -24,6 +26,5 @@ public class QuizCreationWithQuestionsDTO {
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private Date closeDate;
 
-    private List<AdminQuestionRequestDTO> questions;
-
+    private List<AdminQuestionResponseDTO> questions;
 }
