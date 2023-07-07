@@ -163,26 +163,39 @@ public class MemberQuizServiceImpl implements MemberQuizService {
 
     if (!quizAnswerRepository.isQuizTakenBefore(quizId, currentUser.getId())) {
       throw new ResponseStatusException(
-              HttpStatus.NOT_ACCEPTABLE, "you should take the quiz first and time finish to get the result");
+          HttpStatus.NOT_ACCEPTABLE,
+          "you should take the quiz first and time finish to get the result");
     }
-    Quiz quiz=quizRepository.findById(quizId).orElseThrow();
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
     LocalDateTime closeDateTime =
-            LocalDateTime.ofInstant(quiz.getCloseDate().toInstant(), ZoneOffset.UTC);
-    if(closeDateTime.isAfter(LocalDateTime.now())){
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-              "the quiz results not available until quiz closed");
+        LocalDateTime.ofInstant(quiz.getCloseDate().toInstant(), ZoneOffset.UTC);
+    if (closeDateTime.isAfter(LocalDateTime.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.SERVICE_UNAVAILABLE, "the quiz results not available until quiz closed");
     }
     QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, currentUser);
-    int score=0;
-    for(var questionAnswer:quizAnswer.getQuestionAnswers()){
-      if(questionAnswer.getAnswer().equals(questionAnswer.getQuestion().getCorrectAnswers())){
+    int score = 0;
+    for (var questionAnswer : quizAnswer.getQuestionAnswers()) {
+      if (questionAnswer.getAnswer().equals(questionAnswer.getQuestion().getCorrectAnswers())) {
         score++;
       }
     }
     QuizResultReport quizResultReport = new QuizResultReport();
     quizResultReport.setUserResponseDTO(userMapper.toDTO(currentUser));
-    quizResultReport.setNumberOfQuestions((long)quiz.getQuestions().size());
-    quizResultReport.setNumberOfRightQuestion((long)score);
+    quizResultReport.setNumberOfQuestions((long) quiz.getQuestions().size());
+    quizResultReport.setNumberOfRightQuestion((long) score);
     return quizResultReport;
+  }
+
+  @Override
+  public ResponseEntity<String> endTheQuiz(Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO) {
+    submitSolution(quizId, quizAnswerRequestDTO);
+    User currentUser =
+        userRepository.findByEmail(SecurityUtils.getCurrentUserEmail()).orElseThrow();
+    Quiz quiz = quizRepository.findById(quizId).orElseThrow();
+    QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, currentUser);
+    quizAnswer.setFinish(true);
+    quizAnswerRepository.save(quizAnswer);
+    return new ResponseEntity("done ", HttpStatus.OK);
   }
 }

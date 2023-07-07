@@ -15,4 +15,6 @@ public interface MemberQuizService {
     ResponseEntity<String> submitSingleQuestion(Long quizId, Long questionId, QuestionAnswerSubmitDTO questionAnswerSubmitDTO);
 
     QuizResultReport calculateMyQuizResult(Long quizId);
+
+    ResponseEntity<String> endTheQuiz(Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO);
 }
