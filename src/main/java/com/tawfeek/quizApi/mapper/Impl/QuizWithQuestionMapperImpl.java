@@ -1,5 +1,6 @@
 package com.tawfeek.quizApi.mapper.Impl;
 
+import com.tawfeek.quizApi.entity.QuestionAnswer;
 import com.tawfeek.quizApi.entity.Quiz;
 import com.tawfeek.quizApi.entity.QuizAnswer;
 import com.tawfeek.quizApi.mapper.QuestionMapper;
@@ -46,7 +47,7 @@ public class QuizWithQuestionMapperImpl implements QuizWithQuestionMapper {
                                 questionAnswer ->
                                         Objects.equals(questionAnswer.getQuestion().getId(), question.getId()))
                             .findFirst()
-                            .orElseThrow()))
+                            .orElse(new QuestionAnswer())))
             .toList());
     return quizResponseDTO;
   }

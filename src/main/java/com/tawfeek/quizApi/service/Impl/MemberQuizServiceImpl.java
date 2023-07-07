@@ -71,7 +71,7 @@ public class MemberQuizServiceImpl implements MemberQuizService {
     if (quizAnswerRepository.isQuizTakenBefore(quizId, user.getId())) {
       QuizAnswer quizAnswer = quizAnswerRepository.findQuizAnswerByQuizAndUser(quiz, user);
       if (quizAnswer.getFinish()) {
-        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "you finished your quiz");
+        throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "you finished your quiz");
       }
       validateAvailableTimeToContinueSolving(quiz, quizAnswer);
       return quizWithQuestionMapper.toDTO(quiz, quizAnswer);
@@ -188,6 +188,7 @@ public class MemberQuizServiceImpl implements MemberQuizService {
   }
 
   @Override
+  @Transactional
   public ResponseEntity<String> endTheQuiz(Long quizId, QuizAnswerSubmitDTO quizAnswerRequestDTO) {
     submitSolution(quizId, quizAnswerRequestDTO);
     User currentUser =
