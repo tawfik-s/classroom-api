@@ -54,7 +54,7 @@ public class MemberQuizServiceImpl implements MemberQuizService {
 
   @Override
   @Transactional
-  public QuizResponseWithQuestionsDTO StartTakingTheQuiz(Long classroomId, Long quizId) {
+  public synchronized QuizResponseWithQuestionsDTO StartTakingTheQuiz(Long classroomId, Long quizId) {
     String userEmail = SecurityUtils.getCurrentUserEmail();
     User user = userRepository.findByEmail(userEmail).orElseThrow();
     if (!classRoomRepository.isUserAdminOfClassRoom(classroomId, user.getId())
