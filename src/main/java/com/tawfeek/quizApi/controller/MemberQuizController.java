@@ -1,12 +1,9 @@
 package com.tawfeek.quizApi.controller;
 
-import com.tawfeek.quizApi.entity.Quiz;
-import com.tawfeek.quizApi.entity.QuizAnswer;
 import com.tawfeek.quizApi.model.questionAnswer.QuestionAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.quiz.QuizResponseWithQuestionsDTO;
 import com.tawfeek.quizApi.model.quizAnswer.QuizAnswerSubmitDTO;
 import com.tawfeek.quizApi.model.reports.QuizResultReport;
-import com.tawfeek.quizApi.repository.QuizAnswerRepository;
 import com.tawfeek.quizApi.service.MemberQuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberQuizController {
 
   @Autowired private MemberQuizService memberQuizService;
-  @Autowired private QuizAnswerRepository quizAnswerRepository;
 
   @PostMapping("/{classroomId}/quizzes/{quizId}/take")
   public QuizResponseWithQuestionsDTO takeQuiz(
@@ -42,12 +38,8 @@ public class MemberQuizController {
   @PostMapping("/quizzes/{quizId}/end")
   public ResponseEntity<String> endExam(
       @PathVariable Long quizId, @RequestBody QuizAnswerSubmitDTO quizAnswerRequestDTO) {
-    ResponseEntity<String> responseEntity =
-        memberQuizService.submitSolution(quizId, quizAnswerRequestDTO);
-    QuizAnswer quizAnswer = quizAnswerRepository.findById(quizId).orElseThrow();
-    quizAnswer.setFinish(true);
-    quizAnswerRepository.save(quizAnswer);
-    return responseEntity;
+
+    return memberQuizService.endTheQuiz(quizId, quizAnswerRequestDTO);
   }
 
   @GetMapping("/quizzes/{quizId}/calculate-results")
